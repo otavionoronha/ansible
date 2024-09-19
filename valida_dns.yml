@@ -1,0 +1,21 @@
+---
+- hosts: "{{ hostname }}"
+  gather_facts: no
+  vars:
+    ansible_connection: winrm
+    ansible_winrm_server_cert_validation: ignore
+    ansible_winrm_transport: kerberos
+    ansible_ssh_port: 5985
+  tasks:
+  - name: Valida DNS antes da virada
+    win_shell: |
+      $DNS = [Console]::In.ReadToEnd()
+      $t = Resolve-DnsName $DNS.Trim()
+      Write-Host "Nome DNS:" $t.Name "IP:" $t.IPAddress
+    register: check_output
+    args:
+      stdin: "{{ dns_check }}"
+
+  - name: "Exibe o retorno DNS"
+    debug:
+      msg: "{{ check_output.stdout  }}"
